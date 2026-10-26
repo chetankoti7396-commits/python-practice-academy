@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html><body>
+<iframe id="f" src="index.html" style="width:1000px;height:800px;"></iframe>
+<script>
+const frame=document.getElementById('f');
+frame.onload=async()=>{
+  const win=frame.contentWindow; const doc=frame.contentDocument;
+  await new Promise(r=>setTimeout(r,1500));
+  win.navigateTo('test',1,false);
+  await new Promise(r=>setTimeout(r,300));
+  win.testEngine.setCurrentCode(win.testEngine.currentQuestion.solutionCode);
+  const res=await win.runner.validateSubmission(win.testEngine.currentQuestion, win.testEngine.getCurrentCode());
+  console.log('RESULT', JSON.stringify(res));
+  await win.testEngine.submitAnswer();
+  console.log('COMPLETE', win.store.isQuestionComplete(1));
+  const div=document.createElement('div'); div.id='R'; div.textContent=JSON.stringify({passed:res.passed, graded:res.graded, engine:res.executionEngine, complete:win.store.isQuestionComplete(1)});
+  document.body.appendChild(div);
+};
+</script>
+</body></html>

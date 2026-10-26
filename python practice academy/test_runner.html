@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Complete Test Runner</title>
+</head>
+<body>
+<iframe id="test-frame" src="index.html" style="width: 1200px; height: 800px;"></iframe>
+<script>
+async function runAllTests() {
+  const frame = document.getElementById('test-frame');
+  await new Promise(r => {
+    if (frame.contentDocument && frame.contentDocument.readyState === 'complete') r();
+    else frame.onload = r;
+  });
+  await new Promise(r => setTimeout(r, 600));
+
+  const win = frame.contentWindow;
+  const doc = frame.contentDocument;
+
+  const capturedErrors = [];
+  win.addEventListener('error', (e) => {
+    capturedErrors.push({ msg: e.message, src: e.filename, line: e.lineno, col: e.colno });
+  });
+
+  const report = {
+    errors: capturedErrors,
+    questionCount: win.QUESTIONS_DATA ? win.QUESTIONS_DATA.length : 0,
+    views: {},
+    buttons: {},
+    modals: {},
+    aiTutor: {},
+    demos: {}
+  };
+
+  // 1. Test Navigation Views
+  const views = ["home", "practice-modes", "projects", "demos", "mistakes", "question-bank", "glossary", "progress", "results", "learn"];
+  for (const v of views) {
+    try {
+      win.navigateTo(v, null, false);
+      await new Promise(r => setTimeout(r, 80));
+      const appEl = doc.getElementById('app');
+      report.views[v] = {
+        rendered: appEl && appEl.innerHTML.length > 50
+      };
+    } catch(e) {
+      report.views[v] = { rendered: false, error: e.message };
+    }
+  }
+
+  // 2. Test Practice Workspace & Buttons
+  try {
+    win.startPractice(1);
+    await new Promise(r => setTimeout(r, 150));
+    report.buttons.startPractice = {
+      editorFound: !!doc.getElementById('code-editor-textarea'),
+      runBtnFound: !!doc.querySelector('.btn-run-code'),
+      submitBtnFound: !!doc.getElementById('btn-submit-answer'),
+      sidebarBtnFound: !!doc.getElementById('btn-toggle-q-nav'),
+      bookmarkBtnFound: !!doc.getElementById('btn-bookmark-question')
+    };
+
+    // Test toggle sidebar button
+    win.toggleQuestionSidebar();
+    const sidebar = doc.getElementById('test-q-sidebar');
+    report.buttons.toggleQuestionSidebar = {
+      works: sidebar && (sidebar.classList.contains('drawer-open') || sidebar.classList.contains('collapsed'))
+    };
+    win.toggleQuestionSidebar(); // toggle back
+
+    // Test navigate to question 2
+    win.navigateToQuestion(2);
+    await new Promise(r => setTimeout(r, 100));
+    report.buttons.navigateToQuestion = {
+      currentId: win.testEngine.currentQuestion ? win.testEngine.currentQuestion.id : null
+    };
+
+    // Navigate to question 72
+    win.navigateToQuestion(72);
+    await new Promise(r => setTimeout(r, 100));
+    report.buttons.navigateToQuestion72 = {
+      currentId: win.testEngine.currentQuestion ? win.testEngine.currentQuestion.id : null,
+      title: win.testEngine.currentQuestion ? win.testEngine.currentQuestion.title : null
+    };
+
+    // Return to Q1
+    win.navigateToQuestion(1);
+    await new Promise(r => setTimeout(r, 100));
+
+    // Test toggle bookmark
+    win.testEngine.toggleBookmarkCurrent();
+    report.buttons.toggleBookmark = {
+      isBookmarked: win.store.isBookmarked(1)
+    };
+    win.testEngine.toggleBookmarkCurrent(); // revert
+
+    // Test toggle accordion
+    win.toggleAccordion('plain-guide-content');
+    const guideEl = doc.getElementById('plain-guide-content');
+    report.buttons.plainGuideAccordion = {
+      display: guideEl ? guideEl.style.display : null
+    };
+
+    win.toggleAccordion('progressive-hints-box');
+    const hintsEl = doc.getElementById('progressive-hints-box');
+    report.buttons.hintsAccordion = {
+      display: hintsEl ? hintsEl.style.display : null
+    };
+
+    // Test reveal hint
+    win.testEngine.revealNextHint();
+    const badge = doc.getElementById('hints-count-badge');
+    report.buttons.revealHint = {
+      badgeText: badge ? badge.textContent : null
+    };
+
+    // Test Try Your Own Input
+    win.testEngine.toggleCustomInputDrawer();
+    const customDrawer = doc.getElementById('custom-input-drawer');
+    report.buttons.customInputDrawer = {
+      display: customDrawer ? customDrawer.style.display : null
+    };
+    win.testEngine.toggleCustomInputDrawer();
+
+    // Test Run Code
+    await win.testEngine.runCodeOnly();
+    const terminal = doc.getElementById('terminal-stdout');
+    report.buttons.runCodeOnly = {
+      hasOutput: terminal && terminal.innerText.length > 0
+    };
+
+    // Test Submit Answer
+    await win.testEngine.submitAnswer();
+    const feedback = doc.getElementById('feedback-container');
+    report.buttons.submitAnswer = {
+      hasFeedback: feedback && feedback.innerText.length > 0
+    };
+
+  } catch(e) {
+    report.buttons.workspaceError = e.message;
+  }
+
+  // 3. Test Modals
+  const modalNames = ['privacy', 'about', 'help', 'terms'];
+  for (const m of modalNames) {
+    try {
+      win.openInfoModal(m);
+      await new Promise(r => setTimeout(r, 50));
+      const backdrop = doc.getElementById('app-modal-backdrop');
+      const title = doc.getElementById('modal-title');
+      report.modals[m] = {
+        open: backdrop && backdrop.classList.contains('open'),
+        title: title ? title.textContent : null
+      };
+      win.closeModal();
+    } catch(e) {
+      report.modals[m] = { error: e.message };
+    }
+  }
+
+  // Test Cloud Sync Modal
+  try {
+    win.openCloudSyncModal();
+    await new Promise(r => setTimeout(r, 50));
+    const backdrop = doc.getElementById('app-modal-backdrop');
+    report.modals.cloudSync = {
+      open: backdrop && backdrop.classList.contains('open')
+    };
+    win.closeModal();
+  } catch(e) {
+    report.modals.cloudSync = { error: e.message };
+  }
+
+  // Test Editor Preferences Modal
+  try {
+    win.openEditorPreferencesModal();
+    await new Promise(r => setTimeout(r, 50));
+    const backdrop = doc.getElementById('app-modal-backdrop');
+    report.modals.editorPreferences = {
+      open: backdrop && backdrop.classList.contains('open')
+    };
+    win.closeModal();
+  } catch(e) {
+    report.modals.editorPreferences = { error: e.message };
+  }
+
+  // Test Worked Example Modal
+  try {
+    win.openWorkedExampleModal(1);
+    await new Promise(r => setTimeout(r, 50));
+    const backdrop = doc.getElementById('app-modal-backdrop');
+    report.modals.workedExample = {
+      open: backdrop && backdrop.classList.contains('open')
+    };
+    win.closeModal();
+  } catch(e) {
+    report.modals.workedExample = { error: e.message };
+  }
+
+  // Test Glossary Modal
+  try {
+    win.openGlossaryModal();
+    await new Promise(r => setTimeout(r, 50));
+    const backdrop = doc.getElementById('app-modal-backdrop');
+    report.modals.glossaryModal = {
+      open: backdrop && backdrop.classList.contains('open')
+    };
+    win.closeModal();
+  } catch(e) {
+    report.modals.glossaryModal = { error: e.message };
+  }
+
+  // 4. Test AI Tutor & Asking Buttons
+  try {
+    win.aiTutor.open();
+    await new Promise(r => setTimeout(r, 80));
+    const drawer = doc.getElementById('ai-tutor-drawer');
+    report.aiTutor.drawerOpen = drawer && drawer.classList.contains('open');
+
+    // Test Quick Prompt: Explain
+    win.aiTutor.handleQuickPrompt('explain');
+    await new Promise(r => setTimeout(r, 600));
+    let msgs = doc.querySelectorAll('.ai-msg-bubble');
+    report.aiTutor.explainChipWorks = msgs.length >= 2;
+
+    // Test Quick Prompt: Hint
+    win.aiTutor.handleQuickPrompt('hint');
+    await new Promise(r => setTimeout(r, 600));
+    msgs = doc.querySelectorAll('.ai-msg-bubble');
+    report.aiTutor.hintChipWorks = msgs.length >= 4;
+
+    // Test Quick Prompt: Syntax
+    win.aiTutor.handleQuickPrompt('syntax');
+    await new Promise(r => setTimeout(r, 600));
+    msgs = doc.querySelectorAll('.ai-msg-bubble');
+    report.aiTutor.syntaxChipWorks = msgs.length >= 6;
+
+    // Test API Key save with sk- key auto-detection
+    win.aiTutor.saveApiKey("sk-test-openai-key-12345");
+    report.aiTutor.skKeyAutoDetectProvider = win.aiTutor.provider;
+
+    // Clear key
+    win.aiTutor.saveApiKey("");
+    report.aiTutor.emptyKeyRevertsToBuiltin = win.aiTutor.provider;
+
+    // Close drawer
+    win.aiTutor.close();
+    report.aiTutor.drawerClosed = !drawer.classList.contains('open');
+  } catch(e) {
+    report.aiTutor.error = e.message;
+  }
+
+  // 5. Test Question Bank Multi-Filter
+  try {
+    win.navigateTo('question-bank', null, false);
+    await new Promise(r => setTimeout(r, 80));
+    win.filterQBLevel(1);
+    win.filterQBDifficulty('Beginner');
+    win.handleQBSearch('print');
+    report.buttons.questionBankFilters = {
+      levelFilter: true,
+      diffFilter: true,
+      search: true
+    };
+    win.resetQBFilters();
+  } catch(e) {
+    report.buttons.questionBankFiltersError = e.message;
+  }
+
+  // 6. Test Demos
+  try {
+    win.navigateTo('demos', 'conditions', false);
+    await new Promise(r => setTimeout(r, 80));
+    win.updateConditionsDemo(85);
+    report.demos.conditions = true;
+
+    win.navigateTo('demos', 'loops', false);
+    await new Promise(r => setTimeout(r, 80));
+    win.stepLoopDemo();
+    win.resetLoopsDemo();
+    report.demos.loops = true;
+
+    win.navigateTo('demos', 'lists', false);
+    await new Promise(r => setTimeout(r, 80));
+    win.demoListOp('append');
+    report.demos.lists = true;
+  } catch(e) {
+    report.demos.error = e.message;
+  }
+
+  // 7. Test Theme Toggle
+  try {
+    const t1 = win.store.state.theme;
+    win.toggleTheme();
+    const t2 = win.store.state.theme;
+    win.toggleTheme();
+    report.buttons.themeToggle = {
+      toggled: t1 !== t2
+    };
+  } catch(e) {
+    report.buttons.themeToggleError = e.message;
+  }
+
+  const resDiv = document.createElement('div');
+  resDiv.id = 'ALL_TEST_RESULTS';
+  resDiv.textContent = JSON.stringify(report);
+  document.body.appendChild(resDiv);
+}
+
+setTimeout(runAllTests, 1000);
+</script>
+</body>
+</html>

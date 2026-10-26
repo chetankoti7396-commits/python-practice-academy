@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+window.capturedErrors = [];
+window.addEventListener('error', function(e) {
+  window.capturedErrors.push({
+    message: e.message,
+    filename: e.filename,
+    lineno: e.lineno,
+    colno: e.colno
+  });
+});
+</script>
+<script src="js/learning-content.js"></script>
+<script src="js/questions.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/python-runner.js"></script>
+<script src="js/test-engine.js"></script>
+<script src="js/ai-tutor.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/app.js"></script>
+</head>
+<body>
+<div id="app"></div>
+<div id="results"></div>
+<script>
+window.addEventListener('load', function() {
+  var res = {
+    errors: window.capturedErrors,
+    hasStore: !!window.store,
+    hasUI: !!window.UI,
+    hasTestEngine: !!window.testEngine,
+    hasRunner: !!window.runner,
+    questionsCount: window.QUESTIONS_DATA ? window.QUESTIONS_DATA.length : 0,
+    startPracticeType: typeof window.startPractice,
+    navigateToType: typeof window.navigateTo
+  };
+  document.getElementById('results').innerText = JSON.stringify(res);
+});
+</script>
+</body>
+</html>

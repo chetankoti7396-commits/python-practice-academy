@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html><head>
+<script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js"></script>
+<script src="js/questions.js"></script>
+</head><body><div id="r"></div><script>
+const q = (window.QUESTIONS_DATA||[]).find(x=>x.id===53);
+document.getElementById('r').textContent = JSON.stringify({id:q.id, solution:q.solutionCode, tests:q.testCases});
+</script></body></html>

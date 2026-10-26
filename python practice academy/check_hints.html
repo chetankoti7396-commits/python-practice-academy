@@ -1,0 +1,6 @@
+<!DOCTYPE html>
+<html><head><script src="js/questions.js"></script></head><body><div id="r"></div><script>
+const qs = window.QUESTIONS_DATA || [];
+const missing = qs.filter(q => !Array.isArray(q.hints) && !q.hint);
+document.getElementById('r').textContent = JSON.stringify({total: qs.length, missing: missing.length, ids: missing.map(q=>q.id)});
+</script></body></html>

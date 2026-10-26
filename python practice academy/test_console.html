@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body>
+<iframe id="frame" src="index.html" style="width: 1000px; height: 800px;"></iframe>
+<script>
+window.testLog = [];
+window.consoleErrors = [];
+
+function assert(cond, msg) {
+  if (!cond) throw new Error("FAIL: " + msg);
+  window.testLog.push("PASS: " + msg);
+}
+
+const frame = document.getElementById('frame');
+frame.onload = async () => {
+  const win = frame.contentWindow;
+  const doc = frame.contentDocument;
+
+  win.addEventListener('error', e => {
+    window.consoleErrors.push({ msg: e.message, src: e.filename, line: e.lineno });
+  });
+
+  try {
+    // 1. Question count and levels
+    assert(win.QUESTIONS_DATA && win.QUESTIONS_DATA.length === 72, "Total questions is exactly 72");
+    assert(win.store.getMaxQuestionId() === 72, "Storage getMaxQuestionId is 72");
+    const l1 = win.QUESTIONS_DATA.filter(q => q.level === 1);
+    const l7 = win.QUESTIONS_DATA.filter(q => q.level === 7);
+    assert(l1.length === 10, "Level 1 has 10 questions");
+    assert(l7.length === 12, "Level 7 has 12 questions (Q61-Q72)");
+
+    // 2. Skip to main content link
+    const skipLink = doc.querySelector(".skip-link");
+    assert(skipLink, "Skip link exists in DOM");
+    skipLink.click();
+    const appEl = doc.getElementById("app");
+    assert(doc.activeElement === appEl, "Skip link focuses #app");
+
+    // 3. Mobile drawer toggle & ARIA
+    const mobileToggle = doc.getElementById("mobile-toggle-btn");
+    const drawer = doc.getElementById("mobile-drawer");
+    assert(mobileToggle && drawer, "Mobile toggle and drawer exist");
+    assert(mobileToggle.getAttribute("aria-expanded") === "false", "Initial aria-expanded is false");
+    assert(drawer.getAttribute("aria-hidden") === "true", "Initial drawer aria-hidden is true");
+
+    mobileToggle.click();
+    assert(mobileToggle.getAttribute("aria-expanded") === "true", "Clicked toggle sets aria-expanded true");
+    assert(drawer.getAttribute("aria-hidden") === "false", "Clicked toggle sets drawer aria-hidden false");
+
+    // Escape closes drawer
+    doc.dispatchEvent(new win.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    assert(mobileToggle.getAttribute("aria-expanded") === "false", "Escape closes mobile drawer");
+
+    // 4. Modal accessibility & focus management
+    const footerBtn = doc.querySelector("footer button.footer-link");
+    footerBtn.focus();
+    win.openModal("Test A11y Modal", "<p>Content</p>", "Confirm", null);
+    const backdrop = doc.getElementById("app-modal-backdrop");
+    assert(backdrop.classList.contains("open"), "Modal is open");
+    assert(backdrop.getAttribute("aria-hidden") === "false", "Modal aria-hidden is false");
+    assert(backdrop.getAttribute("aria-labelledby") === "modal-title", "Modal backdrop has aria-labelledby");
+
+    // Escape closes modal and restores focus
+    doc.dispatchEvent(new win.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    assert(!backdrop.classList.contains("open"), "Modal closed via Escape");
+    assert(backdrop.getAttribute("aria-hidden") === "true", "Modal aria-hidden is true");
+    assert(doc.activeElement === footerBtn, "Focus restored to footer button");
+
+    // 5. Screen reader live regions
+    const srAnnounce = doc.getElementById("sr-announcements");
+    const srAlert = doc.getElementById("sr-alerts");
+    assert(srAnnounce && srAlert, "Live regions exist");
+    assert(srAnnounce.getAttribute("aria-live") === "polite", "sr-announcements is polite");
+    assert(srAlert.getAttribute("role") === "alert", "sr-alerts has role alert");
+
+    // 6. Navigate all 10 views
+    const views = ["home", "question-bank", "learn", "progress", "results", "mistakes", "practice-modes", "projects", "demos", "glossary"];
+    for (const v of views) {
+      win.navigateTo(v, null, false);
+      assert(appEl.innerHTML.length > 50, "View " + v + " rendered");
+    }
+
+    // 7. Question workspace execution
+    win.navigateTo("test", 1, false);
+    assert(win.testEngine.currentQuestion && win.testEngine.currentQuestion.id === 1, "Question 1 loaded");
+    await win.testEngine.runCodeOnly();
+    const termOut = doc.getElementById("terminal-stdout");
+    assert(termOut && termOut.textContent.length > 0, "Terminal received output for runCodeOnly");
+
+    win.testEngine.setCurrentCode(win.testEngine.currentQuestion.solutionCode);
+    await win.testEngine.submitAnswer();
+    assert(win.store.isQuestionComplete(1), "Question 1 marked complete upon submit");
+
+    // 8. Question 71 and 72 in simulator
+    win.navigateTo("test", 71, false);
+    win.testEngine.setCurrentCode(win.testEngine.currentQuestion.solutionCode);
+    await win.testEngine.submitAnswer();
+    assert(win.store.isQuestionComplete(71), "Question 71 passes test suite");
+
+    win.navigateTo("test", 72, false);
+    win.testEngine.setCurrentCode(win.testEngine.currentQuestion.solutionCode);
+    await win.testEngine.submitAnswer();
+    assert(win.store.isQuestionComplete(72), "Question 72 passes test suite");
+
+    // 9. Reset and Export/Import
+    const exportData = win.store.exportProgressJSON();
+    assert(typeof exportData === "string" && exportData.includes('"score"'), "Export produces JSON");
+    const valRes = win.store.validateImportJSON(exportData);
+    assert(valRes.valid, "Exported JSON passes validator");
+
+    win.store.resetAll();
+    assert(win.store.state.score === 0, "Score reset to 0");
+    assert(!win.store.isQuestionComplete(1), "Question 1 reset to incomplete");
+
+    window.testLog.push("ALL_TESTS_SUCCESSFUL");
+  } catch (err) {
+    window.testLog.push("ERROR: " + err.message + "\n" + err.stack);
+  }
+
+  const res = {
+    errors: window.consoleErrors,
+    log: window.testLog
+  };
+  const div = document.createElement('div');
+  div.id = 'CONSOLE_REPORT';
+  div.textContent = JSON.stringify(res);
+  document.body.appendChild(div);
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Python Practice Academy — Master Python with 72 structured in-browser tests, instant feedback, interactive concept demos, practice modes, and local progress tracking.">
+  <title>Python Practice Academy — Master Python. One Challenge at a Time.</title>
+
+  <!-- Typography: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Application Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Favicon SVG (Python-inspired dual glyph) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%234F8CFF'/%3E%3Cstop offset='100%25' stop-color='%237C3AED'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='%23F8FAFF'/%3E%3Cpath d='M8 12c0-2.2 1.8-4 4-4h4a4 4 0 0 1 4 4v4h-6a2 2 0 0 0-2 2v2H12a4 4 0 0 1-4-4v-4z' fill='url(%23g)'/%3E%3Cpath d='M24 20c0 2.2-1.8 4-4 4h-4a4 4 0 0 1-4-4v-4h6a2 2 0 0 0 2-2v-2h2a4 4 0 0 1 4 4v4z' fill='%234F8CFF'/%3E%3Ccircle cx='11' cy='11' r='1' fill='%23ffffff'/%3E%3Ccircle cx='21' cy='21' r='1' fill='%23ffffff'/%3E%3C/svg%3E">
+</head>
+<body>
+
+  <!-- Accessible Skip to Content Link -->
+  <a href="#app" class="skip-to-content skip-link">Skip to main content</a>
+
+  <!-- 2D Pastel Decorative Background Shapes -->
+  <div class="pastel-bg-decorations" aria-hidden="true">
+    <div class="pastel-shape shape-blob-1"></div>
+    <div class="pastel-shape shape-blob-2"></div>
+    <div class="pastel-shape shape-blob-3"></div>
+  </div>
+
+  <!-- Navigation Bar -->
+  <header class="navbar" role="banner">
+    <div class="container navbar-container">
+      <!-- Brand Logo -->
+      <a href="#home" class="brand-logo" onclick="window.navigateTo('home'); return false;" aria-label="Python Practice Academy Home">
+        <div class="logo-symbol">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <path d="m16 18 6-6-6-6"/>
+            <path d="M8 6l-6 6 6 6"/>
+          </svg>
+        </div>
+        <span>Python <span class="brand-text-accent">Practice</span> Academy</span>
+      </a>
+
+      <!-- Desktop Navigation Links -->
+      <nav aria-label="Main Navigation">
+        <ul class="nav-links">
+          <li><a class="nav-link active" data-view="home" href="#home" onclick="window.navigateTo('home'); return false;">Home</a></li>
+          <li><a class="nav-link" data-view="practice-modes" href="#practice-modes" onclick="window.navigateTo('practice-modes'); return false;">Modes & Quizzes</a></li>
+          <li><a class="nav-link" data-view="projects" href="#projects" onclick="window.navigateTo('projects'); return false;">Guided Projects</a></li>
+          <li><a class="nav-link" data-view="demos" href="#demos" onclick="window.navigateTo('demos'); return false;">Concept Demos</a></li>
+          <li><a class="nav-link" data-view="mistakes" href="#mistakes" onclick="window.navigateTo('mistakes'); return false;">Mistakes Review</a></li>
+          <li><a class="nav-link" data-view="question-bank" href="#question-bank" onclick="window.navigateTo('question-bank'); return false;">Question Bank</a></li>
+          <li><a class="nav-link" data-view="glossary" href="#glossary" onclick="window.navigateTo('glossary'); return false;">Glossary</a></li>
+          <li><a class="nav-link" data-view="learn" href="#learn" onclick="window.navigateTo('learn'); return false;">Cheat Sheet</a></li>
+          <li><a class="nav-link" data-view="progress" href="#progress" onclick="window.navigateTo('progress'); return false;">My Progress</a></li>
+        </ul>
+      </nav>
+
+      <!-- Right Nav Actions -->
+      <div class="nav-actions">
+        <!-- Editor Preferences Quick Button -->
+        <button class="btn-icon" onclick="window.openEditorPreferencesModal()" aria-label="Editor Settings and Accessibility" title="Editor Preferences">
+          ⚙️
+        </button>
+
+        <!-- Theme Toggle -->
+        <button id="theme-toggle-btn" class="btn-icon" aria-label="Toggle Light and Dark Theme" title="Toggle Theme">
+          <span id="theme-icon">🌙</span>
+        </button>
+
+        <!-- Primary Start Learning CTA -->
+        <button class="btn btn-primary btn-sm" onclick="window.startPractice()">
+          Start Practice
+        </button>
+
+        <!-- Mobile Menu Toggle Button -->
+        <button id="mobile-toggle-btn" class="mobile-toggle" aria-label="Toggle Mobile Navigation Menu" aria-expanded="false" aria-controls="mobile-drawer">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer Menu -->
+  <div id="mobile-drawer" class="mobile-drawer" role="navigation" aria-label="Mobile Navigation" aria-hidden="true">
+    <a class="nav-link" href="#home" onclick="window.navigateTo('home'); return false;">Home</a>
+    <a class="nav-link" href="#practice-modes" onclick="window.navigateTo('practice-modes'); return false;">Modes & Quizzes</a>
+    <a class="nav-link" href="#projects" onclick="window.navigateTo('projects'); return false;">Guided Projects</a>
+    <a class="nav-link" href="#demos" onclick="window.navigateTo('demos'); return false;">Concept Demos</a>
+    <a class="nav-link" href="#mistakes" onclick="window.navigateTo('mistakes'); return false;">Mistakes Review</a>
+    <a class="nav-link" href="#test" onclick="window.startPractice(); return false;">Practice Workspace</a>
+    <a class="nav-link" href="#question-bank" onclick="window.navigateTo('question-bank'); return false;">Question Bank (72 Qs)</a>
+    <a class="nav-link" href="#glossary" onclick="window.navigateTo('glossary'); return false;">Glossary</a>
+    <a class="nav-link" href="#learn" onclick="window.navigateTo('learn'); return false;">Syntax Cheat Sheet</a>
+    <a class="nav-link" href="#progress" onclick="window.navigateTo('progress'); return false;">My Progress & Badges</a>
+    <button class="btn btn-primary" onclick="window.startPractice()">Start Learning →</button>
+  </div>
+
+  <!-- SPA Main Dynamic View Container -->
+  <main id="app" role="main" tabindex="-1"></main>
+
+  <!-- Global Application Footer -->
+  <footer class="footer" role="contentinfo">
+    <div class="container">
+      <div class="footer-grid">
+        <!-- Brand Info -->
+        <div>
+          <div class="brand-logo" style="margin-bottom: 0.5rem;">
+            <div class="logo-symbol" style="width: 1.75rem; height: 1.75rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                <path d="m16 18 6-6-6-6"/>
+                <path d="M8 6l-6 6 6 6"/>
+              </svg>
+            </div>
+            <span>Python <span class="brand-text-accent">Practice</span> Academy</span>
+          </div>
+          <p class="footer-brand-desc">
+            Master Python. One Challenge at a Time. All progress is saved in your browser's local storage. Typography loads from Google Fonts and Python engine from jsDelivr CDN; no telemetry, tracking cookies, or analytics are used.
+          </p>
+        </div>
+
+        <!-- Learning Links -->
+        <div>
+          <h4 class="footer-heading">Learning</h4>
+          <ul class="footer-links">
+            <li><button type="button" class="footer-link" onclick="window.startPractice()">Practice Tests</button></li>
+            <li><a href="#practice-modes" class="footer-link" onclick="window.navigateTo('practice-modes'); return false;">Timed Quiz & Daily Sprint</a></li>
+            <li><a href="#projects" class="footer-link" onclick="window.navigateTo('projects'); return false;">Guided Projects</a></li>
+            <li><a href="#demos" class="footer-link" onclick="window.navigateTo('demos'); return false;">Interactive Concept Demos</a></li>
+            <li><a href="#question-bank" class="footer-link" onclick="window.navigateTo('question-bank'); return false;">72 Question Repository</a></li>
+            <li><a href="#learn" class="footer-link" onclick="window.navigateTo('learn'); return false;">Syntax Cheat Sheet</a></li>
+          </ul>
+        </div>
+
+        <!-- Progress Links -->
+        <div>
+          <h4 class="footer-heading">Dashboard</h4>
+          <ul class="footer-links">
+            <li><a href="#progress" class="footer-link" onclick="window.navigateTo('progress'); return false;">My Score, Badges & Streaks</a></li>
+            <li><a href="#mistakes" class="footer-link" onclick="window.navigateTo('mistakes'); return false;">Review Mistakes & Retries</a></li>
+            <li><button type="button" class="footer-link" onclick="window.exportProgressFile()">Export Progress Backup (JSON)</button></li>
+            <li><button type="button" class="footer-link" onclick="window.openEditorPreferencesModal()">Editor & Accessibility Settings</button></li>
+            <li><button type="button" class="footer-link" onclick="window.confirmResetTest()">Reset Test Progress</button></li>
+          </ul>
+        </div>
+
+        <!-- Platform & Legal -->
+        <div>
+          <h4 class="footer-heading">Platform</h4>
+          <ul class="footer-links">
+            <li><button type="button" class="footer-link" onclick="window.openCloudSyncModal()">Cloud Sync Specs (Future Setup)</button></li>
+            <li><button type="button" class="footer-link" onclick="window.openInfoModal('about')">About Platform</button></li>
+            <li><button type="button" class="footer-link" onclick="window.openInfoModal('help')">Help & FAQ</button></li>
+            <li><button type="button" class="footer-link" onclick="window.openInfoModal('privacy')">Privacy Policy</button></li>
+            <li><button type="button" class="footer-link" onclick="window.openInfoModal('terms')">Terms of Use</button></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Footer Bottom -->
+      <div class="footer-bottom">
+        <div>
+          © 2026 Python Practice Academy. Engineered for open education at ₹0 budget.
+        </div>
+        <div style="display: flex; gap: 1.5rem;">
+          <span>Browser-Only Storage</span>
+          <span>Local-First · Export Anytime</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Universal Confirmation & Information Modal -->
+  <div id="app-modal-backdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-hidden="true">
+    <div class="modal-dialog">
+      <h3 id="modal-title" class="modal-title" tabindex="-1">Modal Title</h3>
+      <div id="modal-body"></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="window.closeModal()">Close</button>
+        <button id="modal-confirm-btn" class="btn btn-primary">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screen Reader Live Announcements Area -->
+  <div id="sr-announcements" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  <div id="sr-alerts" class="sr-only" role="alert" aria-live="assertive" aria-atomic="true"></div>
+
+  <!-- Skulpt Browser Python 3 Runtime (CDN with automated fallback) -->
+  <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js"></script>
+
+  <!-- Application Modules -->
+  <script src="js/learning-content.js"></script>
+  <script src="js/questions.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/python-runner.js"></script>
+  <script src="js/test-engine.js"></script>
+  <script src="js/ai-tutor.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

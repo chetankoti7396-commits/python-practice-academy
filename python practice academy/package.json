@@ -1,0 +1,21 @@
+{
+  "name": "python-practice-academy",
+  "version": "1.0.0",
+  "description": "A browser-native Python practice platform with 72 progressive challenges, in-browser execution, granular test feedback, practice modes, and local-first progress tracking.",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx serve ."
+  },
+  "keywords": [
+    "python",
+    "education",
+    "practice",
+    "coding-challenges",
+    "in-browser-python",
+    "skulpt",
+    "interactive-learning"
+  ],
+  "author": "Python Practice Academy",
+  "license": "MIT"
+}

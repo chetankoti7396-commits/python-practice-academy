@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js"></script>
+  <script src="js/questions.js"></script>
+  <script src="js/python-runner.js"></script>
+</head>
+<body>
+<div id="results"></div>
+<script>
+async function testAllQuestions() {
+  const runner = new PythonRunner();
+  const questions = window.QUESTIONS_DATA || [];
+  const report = {
+    total: questions.length,
+    passed: 0,
+    failed: []
+  };
+
+  for (const q of questions) {
+    try {
+      const res = await runner.validateSubmission(q, q.solutionCode);
+      if (res.passed) {
+        report.passed++;
+      } else {
+        report.failed.push({
+          id: q.id,
+          title: q.title,
+          summary: res.summary,
+          details: res.details
+        });
+      }
+    } catch(e) {
+      report.failed.push({
+        id: q.id,
+        title: q.title,
+        error: e.message
+      });
+    }
+  }
+
+  document.getElementById('results').textContent = JSON.stringify(report);
+}
+
+window.addEventListener('load', testAllQuestions);
+</script>
+</body>
+</html>
